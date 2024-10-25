@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
 
-            // Перенаправляем на главную страницу
+            // Перенаправляем на главную страницу или в профиль
             header('Location: index.php');
             exit();
         } else {

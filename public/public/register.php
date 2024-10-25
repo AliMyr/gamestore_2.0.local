@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'];
     $password_confirm = $_POST['password_confirm'];
 
-    // Проверка на пустоту полей
+    // Проверка на пустоту
     if (empty($username)) {
         $errors[] = "Имя пользователя не может быть пустым.";
     }
@@ -40,17 +40,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Если ошибок нет, регистрируем пользователя
     if (empty($errors)) {
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-        
-        // Сохраняем данные пользователя в базе данных
         $stmt = $db->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
         $stmt->execute([$username, $email, $hashedPassword]);
 
-        // Авторизуем пользователя после успешной регистрации
-        $_SESSION['user_id'] = $db->lastInsertId();
-        $_SESSION['username'] = $username;
-
-        // Перенаправляем на главную страницу
-        header('Location: index.php');
+        echo "Регистрация успешна! Теперь вы можете войти.";
+        header('Location: login.php');
         exit();
     }
 }
@@ -90,6 +84,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <button type="submit">Зарегистрироваться</button>
 </form>
+
+<p>Уже есть аккаунт? <a href="login.php">Войти</a></p>
 
 </body>
 </html>
