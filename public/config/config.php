@@ -1,17 +1,22 @@
 <?php
-// Параметры для подключения к базе данных
-$host = '127.127.126.50';
-$dbname = 'gamestore';
-$user = 'root';  // Укажите своё имя пользователя базы данных
-$pass = '';      // Укажите свой пароль для базы данных
+// Настройки подключения к базе данных
+$host = 'localhost';
+$db   = 'gamestore_v2';  // Имя базы данных, которую мы только что создали
+$user = 'root';          // Имя пользователя базы данных (обычно root на локальном сервере)
+$pass = '';              // Пароль, если он есть. Обычно на локалке пустой
+$charset = 'utf8mb4';
+
+// Настройка DSN (Data Source Name)
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+$options = [
+    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION, // Режим ошибок - выбрасывать исключения
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,       // Режим выборки данных - ассоциативный массив
+    PDO::ATTR_EMULATE_PREPARES   => false,                  // Отключаем эмуляцию подготовленных запросов для безопасности
+];
 
 try {
-    // Подключение к базе данных через PDO
-    $db = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $user, $pass);
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    // Если возникает ошибка подключения
-    echo "Ошибка подключения к базе данных: " . $e->getMessage();
-    exit();
+    $db = new PDO($dsn, $user, $pass, $options);
+} catch (\PDOException $e) {
+    throw new \PDOException($e->getMessage(), (int)$e->getCode());
 }
 ?>

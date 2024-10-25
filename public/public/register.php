@@ -16,7 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if (empty($email)) {
         $errors[] = "Email не может быть пустым.";
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    }
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = "Некорректный формат email.";
     }
     if (empty($password)) {
@@ -39,11 +40,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Если ошибок нет, регистрируем пользователя
     if (empty($errors)) {
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+        
+        // Сохраняем данные пользователя в базе данных
         $stmt = $db->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
         $stmt->execute([$username, $email, $hashedPassword]);
 
-        // Перенаправляем на страницу входа
-        header('Location: login.php');
+        // Авторизуем пользователя после успешной регистрации
+        $_SESSION['user_id'] = $db->lastInsertId();
+        $_SESSION['username'] = $username;
+
+        // Перенаправляем на главную страницу
+        header('Location: index.php');
         exit();
     }
 }
