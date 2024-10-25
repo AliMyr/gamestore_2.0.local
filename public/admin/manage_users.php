@@ -8,34 +8,32 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     exit();
 }
 
-// Получаем все заказы
-$stmt = $db->prepare("SELECT * FROM orders");
+// Получаем всех пользователей
+$stmt = $db->prepare("SELECT * FROM users");
 $stmt->execute();
-$orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 include '../includes/admin/header.php';  // Подключаем шапку для админки
 ?>
 
-<h1>Управление заказами</h1>
+<h1>Управление пользователями</h1>
 
 <table>
     <tr>
-        <th>ID заказа</th>
-        <th>ID пользователя</th>
-        <th>Общая сумма</th>
-        <th>Статус</th>
-        <th>Дата создания</th>
+        <th>ID</th>
+        <th>Имя пользователя</th>
+        <th>Email</th>
+        <th>Дата регистрации</th>
         <th>Действия</th>
     </tr>
-    <?php foreach ($orders as $order): ?>
+    <?php foreach ($users as $user): ?>
         <tr>
-            <td><?php echo $order['id']; ?></td>
-            <td><?php echo $order['user_id']; ?></td>
-            <td><?php echo $order['total_price']; ?> тенге</td>
-            <td><?php echo htmlspecialchars($order['status']); ?></td>
-            <td><?php echo $order['created_at']; ?></td>
+            <td><?php echo $user['id']; ?></td>
+            <td><?php echo htmlspecialchars($user['username']); ?></td>
+            <td><?php echo htmlspecialchars($user['email']); ?></td>
+            <td><?php echo $user['created_at']; ?></td>
             <td>
-                <a href="view_order.php?id=<?php echo $order['id']; ?>">Просмотр</a>
+                <a href="view_user.php?id=<?php echo $user['id']; ?>">Просмотреть заказы</a>
             </td>
         </tr>
     <?php endforeach; ?>
