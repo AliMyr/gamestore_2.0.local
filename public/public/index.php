@@ -33,7 +33,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['game_id'])) {
     <title>Магазин игр</title>
 </head>
 <body>
-
+<?php
+include '../includes/public/header.php';  // Подключаем шапку сайта
+?>
 <h1>Добро пожаловать в наш магазин игр</h1>
 
 <?php if (count($games) > 0): ?>
@@ -58,6 +60,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['game_id'])) {
 <?php endif; ?>
 
 <p><a href="cart.php">Перейти в корзину</a></p>
-
+<?php
+include '../includes/public/footer.php';  // Подключаем подвал сайта
+?>
 </body>
 </html>

@@ -3,7 +3,7 @@ session_start();
 include '../config/config.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = $_POST['email'];
+    $email = trim($_POST['email']);
     $password = $_POST['password'];
 
     // Ищем пользователя по email
@@ -12,11 +12,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($user && password_verify($password, $user['password'])) {
-        // Авторизация успешна, сохраняем данные в сессии
-        $_SESSION['user_id'] = $user['id'];
-        $_SESSION['username'] = $user['username'];
-        header('Location: profile.php');
-        exit();
+        // Проверяем, подтвержден ли email
+        if ($user['email_verified'] == 1) {
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['username'] = $user['username'];
+            header('Location: profile.php');
+            exit();
+        } else {
+            echo "Ваш email не подтверждён. Пожалуйста, подтвердите его.";
+        }
     } else {
         echo "Неверный email или пароль.";
     }

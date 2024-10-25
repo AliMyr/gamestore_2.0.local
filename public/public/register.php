@@ -1,5 +1,12 @@
 <?php
-include '../config/config.php';
+require '../../vendor/autoload.php';  // Подключаем autoload.php
+include '../config/config.php';       // Подключение базы данных
+
+require 'send_email.php';  // Подключаем файл для отправки email
+
+// Остальной код регистрации
+
+
 
 $errors = [];
 
@@ -39,15 +46,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Если ошибок нет, регистрируем пользователя
     if (empty($errors)) {
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-        $stmt = $db->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
-        $stmt->execute([$username, $email, $hashedPassword]);
+        
+        // Генерация кода подтверждения
+        $verification_code = rand(100000, 999999);
 
-        echo "Регистрация успешна! Теперь вы можете войти.";
-        header('Location: login.php');
+        // Сохраняем данные пользователя в базе данных
+        $stmt = $db->prepare("INSERT INTO users (username, email, password, email_verified, verification_code) VALUES (?, ?, ?, 0, ?)");
+        $stmt->execute([$username, $email, $hashedPassword, $verification_code]);
+
+        // Отображаем код подтверждения прямо на экране
+        echo "Регистрация успешна! Ваш код подтверждения: $verification_code. Введите его для подтверждения.";
+        
+        // Переход на страницу для подтверждения
+        header('Location: verify_email.php');
         exit();
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="ru">
