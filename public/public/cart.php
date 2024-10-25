@@ -4,6 +4,18 @@ include '../config/config.php';  // Подключение к базе данн�
 
 $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
 
+// Если пользователь авторизован, загружаем корзину из базы данных
+if (isset($_SESSION['user_id'])) {
+    $user_id = $_SESSION['user_id'];
+    $stmt = $db->prepare("SELECT * FROM user_cart WHERE user_id = ?");
+    $stmt->execute([$user_id]);
+    $cart_items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($cart_items as $item) {
+        $_SESSION['cart'][$item['game_id']] = ['quantity' => $item['quantity']];
+    }
+}
+
 // Если корзина не пуста
 if (count($cart) > 0) {
     $game_ids = array_keys($cart);
@@ -12,46 +24,35 @@ if (count($cart) > 0) {
     $stmt->execute($game_ids);
     $games = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Отображаем товары
+    // Рассчитываем общую стоимость
+    $total_price = 0;
     foreach ($games as $game) {
         $game_id = $game['id'];
-        echo "Товар: " . $game['title'] . " Количество: " . $cart[$game_id]['quantity'] . "<br>";
+        $quantity = $cart[$game_id]['quantity'];
+        $total_price += $game['price'] * $quantity;
     }
 } else {
-    echo "Корзина пуста.";
+    $games = [];
+    $total_price = 0;
 }
+
+include '../includes/public/header.php';  // Подключаем шапку
 ?>
 
-
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Корзина покупок</title>
-</head>
-<body>
-
-<h1>Корзина покупок</h1>
+<h1>Корзина</h1>
 
 <?php if (count($games) > 0): ?>
-    <form method="POST">
-        <ul>
-            <?php foreach ($games as $game): ?>
-                <li>
-                    <h2><?php echo htmlspecialchars($game['title']); ?></h2>
-                    <p>Цена: <?php echo htmlspecialchars($game['price']); ?> руб.</p>
-                    <label for="quantity_<?php echo $game['id']; ?>">Количество:</label>
-                    <input type="number" name="quantity" id="quantity_<?php echo $game['id']; ?>" value="<?php echo $cart[$game['id']]['quantity']; ?>" min="1">
-                    <input type="hidden" name="game_id" value="<?php echo $game['id']; ?>">
-                    <button type="submit" name="update">Обновить количество</button>
-                    <button type="submit" name="remove">Удалить из корзины</button>
-                </li>
-            <?php endforeach; ?>
-        </ul>
-    </form>
+    <ul>
+        <?php foreach ($games as $game): ?>
+            <li>
+                <h2><?php echo htmlspecialchars($game['title']); ?></h2>
+                <p>Цена: <?php echo htmlspecialchars($game['price']); ?> тенге</p>
+                <p>Количество: <?php echo $cart[$game['id']]['quantity']; ?></p>
+            </li>
+        <?php endforeach; ?>
+    </ul>
+    <p>Общая стоимость: <?php echo $total_price; ?> тенге</p>
 
-    <p>Общая стоимость: <?php echo $total_price; ?> руб.</p>
     <form method="POST" action="checkout.php">
         <button type="submit">Оформить заказ</button>
     </form>
@@ -59,5 +60,6 @@ if (count($cart) > 0) {
     <p>Ваша корзина пуста.</p>
 <?php endif; ?>
 
-</body>
-</html>
+<?php
+include '../includes/public/footer.php';  // Подключаем подвал
+?>

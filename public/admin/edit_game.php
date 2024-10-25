@@ -1,17 +1,16 @@
 <?php
 session_start();
-include '../config/config.php';
 
-// Проверяем, авторизован ли пользователь
-if (!isset($_SESSION['user_id'])) {
+// Проверяем, авторизован ли администратор
+if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
     header('Location: login.php');
     exit();
 }
 
-// Получаем ID игры из URL
-$game_id = $_GET['id'];
+include '../config/config.php';  // Подключение к базе данных
 
-// Получаем данные игры
+// Получаем информацию об игре
+$game_id = $_GET['id'];
 $stmt = $db->prepare("SELECT * FROM games WHERE id = ?");
 $stmt->execute([$game_id]);
 $game = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -21,67 +20,73 @@ if (!$game) {
     exit();
 }
 
-// Обновляем данные игры, если форма отправлена
+$errors = [];
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $title = $_POST['title'];
-    $description = $_POST['description'];
-    $price = $_POST['price'];
+    $title = trim($_POST['title']);
+    $description = trim($_POST['description']);
+    $price = trim($_POST['price']);
+    $image = $_FILES['image']['name'];
 
-    // Обрабатываем изображение
-    $image = $game['image'];  // Оставляем текущее изображение, если новое не загружено
-    if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-        $imageTmpPath = $_FILES['image']['tmp_name'];
-        $imageName = $_FILES['image']['name'];
-        $uploadDir = '../uploads/games/';
-        $destination = $uploadDir . $imageName;
-
-        // Перемещаем новое изображение
-        if (move_uploaded_file($imageTmpPath, $destination)) {
-            $image = $imageName;  // Обновляем изображение только если новое успешно загружено
-        }
+    // Простая валидация
+    if (empty($title)) {
+        $errors[] = "Название игры не может быть пустым.";
+    }
+    if (empty($description)) {
+        $errors[] = "Описание игры не может быть пустым.";
+    }
+    if (empty($price) || !is_numeric($price)) {
+        $errors[] = "Цена должна быть числом.";
     }
 
     // Обновляем игру в базе данных
-    $stmt = $db->prepare("UPDATE games SET title = ?, description = ?, price = ?, image = ? WHERE id = ?");
-    $stmt->execute([$title, $description, $price, $image, $game_id]);
+    if (empty($errors)) {
+        if (!empty($image)) {
+            $target_dir = "../uploads/";
+            $target_file = $target_dir . basename($image);
+            move_uploaded_file($_FILES['image']['tmp_name'], $target_file);
 
-    echo "Игра успешно обновлена!";
-    header("Location: admin.php");
-    exit();
+            $stmt = $db->prepare("UPDATE games SET title = ?, description = ?, price = ?, image = ? WHERE id = ?");
+            $stmt->execute([$title, $description, $price, $image, $game_id]);
+        } else {
+            $stmt = $db->prepare("UPDATE games SET title = ?, description = ?, price = ? WHERE id = ?");
+            $stmt->execute([$title, $description, $price, $game_id]);
+        }
+
+        header('Location: manage_games.php');  // Перенаправляем на страницу управления играми
+        exit();
+    }
 }
 
+include '../includes/admin/header.php';  // Подключаем шапку админки
 ?>
 
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Редактировать игру</title>
-</head>
-<body>
-
 <h1>Редактировать игру</h1>
+
+<?php if (!empty($errors)): ?>
+    <ul>
+        <?php foreach ($errors as $error): ?>
+            <li><?php echo $error; ?></li>
+        <?php endforeach; ?>
+    </ul>
+<?php endif; ?>
 
 <form method="POST" enctype="multipart/form-data">
     <label for="title">Название игры:</label>
     <input type="text" name="title" id="title" value="<?php echo htmlspecialchars($game['title']); ?>" required><br>
 
-    <label for="description">Описание:</label>
+    <label for="description">Описание игры:</label>
     <textarea name="description" id="description" required><?php echo htmlspecialchars($game['description']); ?></textarea><br>
 
     <label for="price">Цена:</label>
-    <input type="number" name="price" id="price" value="<?php echo htmlspecialchars($game['price']); ?>" required><br>
+    <input type="text" name="price" id="price" value="<?php echo htmlspecialchars($game['price']); ?>" required><br>
 
     <label for="image">Изображение:</label>
     <input type="file" name="image" id="image"><br>
-    <?php if ($game['image']): ?>
-        <p>Текущее изображение: <img src="../uploads/games/<?php echo htmlspecialchars($game['image']); ?>" alt="<?php echo htmlspecialchars($game['title']); ?>" width="150"></p>
-    <?php endif; ?>
 
     <button type="submit">Сохранить изменения</button>
 </form>
 
-
-</body>
-</html>
+<?php
+include '../includes/admin/footer.php';  // Подключаем подвал админки
+?>
