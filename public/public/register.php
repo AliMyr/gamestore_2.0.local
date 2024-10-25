@@ -10,14 +10,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'];
     $password_confirm = $_POST['password_confirm'];
 
-    // Проверка на пустоту
+    // Проверка на пустоту полей
     if (empty($username)) {
         $errors[] = "Имя пользователя не может быть пустым.";
     }
     if (empty($email)) {
         $errors[] = "Email не может быть пустым.";
-    }
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = "Некорректный формат email.";
     }
     if (empty($password)) {
@@ -43,14 +42,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $db->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
         $stmt->execute([$username, $email, $hashedPassword]);
 
-        // После успешной регистрации перенаправляем на страницу входа
+        // Перенаправляем на страницу входа
         header('Location: login.php');
         exit();
     }
 }
-
-include '../includes/public/header.php';  // Подключаем шапку
 ?>
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация</title>
+</head>
+<body>
 
 <h1>Регистрация</h1>
 
@@ -78,6 +84,5 @@ include '../includes/public/header.php';  // Подключаем шапку
     <button type="submit">Зарегистрироваться</button>
 </form>
 
-<?php
-include '../includes/public/footer.php';  // Подключаем подвал
-?>
+</body>
+</html>

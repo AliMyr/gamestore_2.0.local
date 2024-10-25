@@ -1,4 +1,5 @@
 <?php
+session_start();
 include '../config/config.php';  // Подключение к базе данных
 include '../includes/public/header.php';  // Подключаем шапку
 
@@ -13,7 +14,10 @@ $games = $stmt->fetchAll();
     <ul>
         <?php foreach ($games as $game): ?>
             <li>
-                <h2><?php echo htmlspecialchars($game['title']); ?></h2>
+                <h3><?php echo htmlspecialchars($game['title']); ?></h3>
+                <?php if ($game['image']): ?>
+                    <img src="../uploads/<?php echo htmlspecialchars($game['image']); ?>" alt="<?php echo htmlspecialchars($game['title']); ?>" width="100">
+                <?php endif; ?>
                 <p><?php echo htmlspecialchars($game['description']); ?></p>
                 <p>Цена: <?php echo htmlspecialchars($game['price']); ?> тенге</p>
                 <a href="game.php?id=<?php echo $game['id']; ?>">Подробнее</a>

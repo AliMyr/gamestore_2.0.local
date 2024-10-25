@@ -1,34 +1,33 @@
 <?php
-session_start();
 include '../config/config.php';  // Подключение к базе данных
+include '../includes/public/header.php';  // Подключаем шапку
 
-// Получаем ID игры из URL
-if (isset($_GET['id'])) {
-    $game_id = $_GET['id'];
+$game_id = $_GET['id'];
 
-    // Получаем информацию об игре
-    $stmt = $db->prepare("SELECT * FROM games WHERE id = ?");
-    $stmt->execute([$game_id]);
-    $game = $stmt->fetch(PDO::FETCH_ASSOC);
+$stmt = $db->prepare("SELECT * FROM games WHERE id = ?");
+$stmt->execute([$game_id]);
+$game = $stmt->fetch();
 
-    if (!$game) {
-        echo "Игра не найдена!";
-        exit();
-    }
-} else {
-    echo "ID игры не указан!";
+if (!$game) {
+    echo "<p>Игра не найдена.</p>";
+    include '../includes/public/footer.php';
     exit();
 }
-
-include '../includes/public/header.php';  // Подключаем шапку
 ?>
 
 <h1><?php echo htmlspecialchars($game['title']); ?></h1>
+
+<?php if ($game['image']): ?>
+    <img src="../uploads/<?php echo htmlspecialchars($game['image']); ?>" alt="<?php echo htmlspecialchars($game['title']); ?>" width="200">
+<?php endif; ?>
+
 <p><?php echo htmlspecialchars($game['description']); ?></p>
 <p>Цена: <?php echo htmlspecialchars($game['price']); ?> тенге</p>
 
 <form method="POST" action="add_to_cart.php">
     <input type="hidden" name="game_id" value="<?php echo $game['id']; ?>">
+    <label for="quantity">Количество:</label>
+    <input type="number" name="quantity" id="quantity" value="1" min="1">
     <button type="submit">Добавить в корзину</button>
 </form>
 

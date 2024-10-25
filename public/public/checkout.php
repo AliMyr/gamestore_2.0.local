@@ -67,13 +67,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($error)) {
         }
 
         // Очищаем корзину после оформления заказа
-        if ($user_id) {
-            // Если пользователь авторизован, очищаем корзину в базе данных
-            $stmt = $db->prepare("DELETE FROM user_cart WHERE user_id = ?");
-            $stmt->execute([$user_id]);
-        }
-
-        // Очищаем корзину в сессии
         unset($_SESSION['cart']);
 
         // Перенаправляем на страницу успешного оформления заказа

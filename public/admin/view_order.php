@@ -1,5 +1,6 @@
 <?php
 session_start();
+include '../config/config.php';  // Подключение к базе данных
 
 // Проверяем, авторизован ли администратор
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
@@ -7,25 +8,24 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     exit();
 }
 
-include '../config/config.php';  // Подключение к базе данных
+$order_id = $_GET['id'];
 
 // Получаем информацию о заказе
-$order_id = $_GET['id'];
 $stmt = $db->prepare("SELECT orders.*, users.username FROM orders LEFT JOIN users ON orders.user_id = users.id WHERE orders.id = ?");
 $stmt->execute([$order_id]);
-$order = $stmt->fetch(PDO::FETCH_ASSOC);
+$order = $stmt->fetch();
 
 if (!$order) {
-    echo "Заказ не найден!";
+    echo "<p>Заказ не найден.</p>";
     exit();
 }
 
 // Получаем товары, связанные с заказом
 $stmt = $db->prepare("SELECT order_items.*, games.title FROM order_items JOIN games ON order_items.game_id = games.id WHERE order_items.order_id = ?");
 $stmt->execute([$order_id]);
-$order_items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$order_items = $stmt->fetchAll();
 
-include '../includes/admin/header.php';  // Подключаем шапку админки
+include '../includes/admin/header.php';  // Подключаем шапку для админки
 ?>
 
 <h1>Детали заказа #<?php echo htmlspecialchars($order['id']); ?></h1>
@@ -56,6 +56,17 @@ include '../includes/admin/header.php';  // Подключаем шапку ад
     </tbody>
 </table>
 
+<form method="POST" action="change_status.php">
+    <label for="status">Изменить статус заказа:</label>
+    <select name="status" id="status">
+        <option value="new" <?php if ($order['status'] === 'new') echo 'selected'; ?>>Новый</option>
+        <option value="completed" <?php if ($order['status'] === 'completed') echo 'selected'; ?>>Выполнен</option>
+        <option value="canceled" <?php if ($order['status'] === 'canceled') echo 'selected'; ?>>Отменён</option>
+    </select>
+    <input type="hidden" name="order_id" value="<?php echo htmlspecialchars($order['id']); ?>">
+    <button type="submit">Обновить статус</button>
+</form>
+
 <?php
-include '../includes/admin/footer.php';  // Подключаем подвал админки
+include '../includes/admin/footer.php';  // Подключаем подвал для админки
 ?>

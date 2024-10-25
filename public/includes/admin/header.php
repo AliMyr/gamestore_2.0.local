@@ -23,6 +23,7 @@ if (!isset($_SESSION['admin_logged_in'])) {
             <li><a href="/admin/manage_games.php">Управление играми</a></li>
             <li><a href="/admin/manage_orders.php">Управление заказами</a></li>
             <li><a href="/admin/manage_users.php">Управление пользователями</a></li>
+            <li><a href="/admin/reports.php">Отчеты</a></li> <!-- Добавил кнопку "Отчеты" -->
             <li><a href="/admin/logout.php">Выход</a></li>
         </ul>
     </nav>
