@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Магазин игр</title>
+    <link rel="stylesheet" href="/css/public-styles.css">  <!-- Подключаем стили для пользователей -->
 </head>
 <body>
-
 <header>
     <h1>Магазин игр</h1>
     <nav>

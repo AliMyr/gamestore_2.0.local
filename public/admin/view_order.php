@@ -48,24 +48,13 @@ include '../includes/admin/header.php';  // Подключаем шапку дл
         <?php foreach ($order_items as $item): ?>
             <tr>
                 <td><?php echo htmlspecialchars($item['title']); ?></td>
-                <td><?php echo htmlspecialchars($item['quantity']); ?></td>
+                <td>1</td> <!-- Количество всегда 1, так как мы позволяем только одну покупку за раз -->
                 <td><?php echo htmlspecialchars($item['price']); ?> тенге</td>
-                <td><?php echo htmlspecialchars($item['price'] * $item['quantity']); ?> тенге</td>
+                <td><?php echo htmlspecialchars($item['price']); ?> тенге</td> <!-- Общая стоимость тоже будет равна цене -->
             </tr>
         <?php endforeach; ?>
     </tbody>
 </table>
-
-<form method="POST" action="change_status.php">
-    <label for="status">Изменить статус заказа:</label>
-    <select name="status" id="status">
-        <option value="new" <?php if ($order['status'] === 'new') echo 'selected'; ?>>Новый</option>
-        <option value="completed" <?php if ($order['status'] === 'completed') echo 'selected'; ?>>Выполнен</option>
-        <option value="canceled" <?php if ($order['status'] === 'canceled') echo 'selected'; ?>>Отменён</option>
-    </select>
-    <input type="hidden" name="order_id" value="<?php echo htmlspecialchars($order['id']); ?>">
-    <button type="submit">Обновить статус</button>
-</form>
 
 <?php
 include '../includes/admin/footer.php';  // Подключаем подвал для админки

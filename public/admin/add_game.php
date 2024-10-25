@@ -1,80 +1,55 @@
 <?php
 session_start();
 include '../config/config.php';  // Подключение к базе данных
+include '../includes/admin/header.php';  // Подключаем шапку
 
-// Проверяем, авторизован ли администратор
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-    header('Location: login.php');
-    exit();
-}
-
-$errors = [];
-
+// Проверяем, была ли отправлена форма
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $title = trim($_POST['title']);
-    $description = trim($_POST['description']);
+    $title = $_POST['title'];
+    $description = $_POST['description'];
     $price = $_POST['price'];
+    $genre = $_POST['genre'];
+    $release_date = $_POST['release_date'];
 
     // Обработка загрузки изображения
-    if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
-        $image_name = time() . '_' . $_FILES['image']['name'];
-        $image_path = '../uploads/' . $image_name;
-        move_uploaded_file($_FILES['image']['tmp_name'], $image_path);
+    $image = $_FILES['image']['name'];
+    $target = "../uploads/" . basename($image);
+    
+    if (move_uploaded_file($_FILES['image']['tmp_name'], $target)) {
+        // Записываем игру в базу данных
+        $stmt = $db->prepare("INSERT INTO games (title, description, price, image, genre, release_date) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$title, $description, $price, $image, $genre, $release_date]);
+        echo "Игра добавлена!";
     } else {
-        $image_name = null;  // Если изображение не загружено
-    }
-
-    // Проверка на пустоту полей
-    if (empty($title)) {
-        $errors[] = "Название игры не может быть пустым.";
-    }
-    if (empty($description)) {
-        $errors[] = "Описание игры не может быть пустым.";
-    }
-    if (empty($price) || !is_numeric($price)) {
-        $errors[] = "Некорректная цена.";
-    }
-
-    // Если ошибок нет, добавляем игру в базу данных
-    if (empty($errors)) {
-        $stmt = $db->prepare("INSERT INTO games (title, description, price, image) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$title, $description, $price, $image_name]);
-
-        // Перенаправляем на страницу управления играми
-        header('Location: manage_games.php');
-        exit();
+        echo "Ошибка при загрузке изображения.";
     }
 }
-
-include '../includes/admin/header.php';  // Подключаем шапку для админки
 ?>
 
-<h1>Добавление новой игры</h1>
-
-<?php if (!empty($errors)): ?>
-    <ul>
-        <?php foreach ($errors as $error): ?>
-            <li><?php echo htmlspecialchars($error); ?></li>
-        <?php endforeach; ?>
-    </ul>
-<?php endif; ?>
+<h2>Добавить игру</h2>
 
 <form method="POST" enctype="multipart/form-data">
     <label for="title">Название:</label>
-    <input type="text" name="title" id="title" required><br>
+    <input type="text" id="title" name="title" required><br>
 
     <label for="description">Описание:</label>
-    <textarea name="description" id="description" required></textarea><br>
+    <textarea id="description" name="description" required></textarea><br>
 
-    <label for="price">Цена:</label>
-    <input type="number" name="price" id="price" required><br>
+    <label for="price">Цена (в тенге):</label>
+    <input type="number" id="price" name="price" required><br>
+
+    <label for="genre">Жанр:</label>
+    <input type="text" id="genre" name="genre" required><br>
+
+    <label for="release_date">Дата выхода:</label>
+    <input type="date" id="release_date" name="release_date" required><br>
 
     <label for="image">Изображение:</label>
-    <input type="file" name="image" id="image"><br>
+    <input type="file" id="image" name="image" required><br><br>
 
     <button type="submit">Добавить игру</button>
 </form>
 
 <?php
-include '../includes/admin/footer.php';  // Подключаем подвал для админки
+include '../includes/admin/footer.php';  // Подключаем подвал
 ?>

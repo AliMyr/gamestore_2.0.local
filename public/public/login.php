@@ -27,7 +27,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
 
-            // Перенаправляем на главную страницу или в профиль
+            // Загружаем данные корзины из базы
+            $stmt = $db->prepare("SELECT game_id, quantity FROM user_cart WHERE user_id = ?");
+            $stmt->execute([$user['id']]);
+            $cart_items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Сохраняем данные корзины в сессии
+            $_SESSION['cart'] = [];
+            foreach ($cart_items as $item) {
+                $_SESSION['cart'][$item['game_id']] = ['quantity' => $item['quantity']];
+            }
+
             header('Location: index.php');
             exit();
         } else {

@@ -21,32 +21,29 @@ $games = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Рассчитываем общую стоимость заказа
 $total_price = 0;
+
 ?>
 
 <h1>Корзина</h1>
 
-<form method="POST" action="update_cart.php">
+<form method="POST" action="checkout.php">
     <ul>
         <?php foreach ($games as $game): ?>
             <?php
             $game_id = $game['id'];
-            $quantity = $cart[$game_id]['quantity'];
-            $total_price += $game['price'] * $quantity;
+            $total_price += $game['price']; // Суммируем стоимость каждой игры
             ?>
             <li>
                 <h2><?php echo htmlspecialchars($game['title']); ?></h2>
                 <p>Цена: <?php echo htmlspecialchars($game['price']); ?> тенге</p>
-                <label for="quantity_<?php echo $game_id; ?>">Количество:</label>
-                <input type="number" id="quantity_<?php echo $game_id; ?>" name="quantity[<?php echo $game_id; ?>]" value="<?php echo $quantity; ?>" min="1">
-                <a href="remove_from_cart.php?id=<?php echo $game_id; ?>">Удалить</a>
+                <form method="POST" action="remove_from_cart.php" style="display:inline;">
+                    <input type="hidden" name="game_id" value="<?php echo $game_id; ?>">
+                    <button type="submit" style="color: red;">Удалить</button>
+                </form>
             </li>
         <?php endforeach; ?>
     </ul>
     <p>Общая стоимость: <?php echo $total_price; ?> тенге</p>
-    <button type="submit">Обновить корзину</button>
-</form>
-
-<form method="POST" action="checkout.php">
     <button type="submit">Оформить заказ</button>
 </form>
 
