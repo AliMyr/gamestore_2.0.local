@@ -30,17 +30,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 ?>
 
-<h2>Вход</h2>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Вход</title>
+    <link rel="stylesheet" href="https://gamestore.local/css/style.css">
+</head>
+<body>
 
-<form method="POST">
-    <label>Имя пользователя:</label>
-    <input type="text" name="username" required><br>
-    <label>Пароль:</label>
-    <input type="password" name="password" required><br>
-    <input type="submit" value="Войти">
-</form>
+<div class="form-container">
+    <h2>Вход</h2>
+    <form method="POST">
+        <label for="username">Имя пользователя:</label>
+        <input type="text" name="username" id="username" required>
+        
+        <label for="password">Пароль:</label>
+        <input type="password" name="password" id="password" required>
+        
+        <input type="submit" value="Войти" class="form-button">
+        
+        <?php if (isset($error)): ?>
+            <p class="error-message"><?php echo htmlspecialchars($error); ?></p>
+        <?php endif; ?>
+    </form>
+</div>
 
-<?php
-include_once "../includes/footer.php";
-$conn->close();
-?>
+<?php include_once "../includes/footer.php"; ?>
+</body>
+</html>
+

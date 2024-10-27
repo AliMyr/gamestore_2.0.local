@@ -7,9 +7,13 @@
     <script src="https://gamestore.local/js/main.js"></script>
 </head>
 <body>
-    <header>
+<header>
+    <div class="header-container">
         <div class="logo">
             <img src="https://gamestore.local/img/logo.png" alt="GameStore Logo">
         </div>
-        <h1>GameStore</h1>
-    </header>
+        <h1 class="header-title">GameStore</h1>
+    </div>
+</header>
+</body>
+</html>

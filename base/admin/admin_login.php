@@ -31,15 +31,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 ?>
 
-<h2>Вход для администратора</h2>
-
-<form method="POST" action="admin_login.php">
-    <label for="username">Имя пользователя:</label>
-    <input type="text" name="username" id="username" required>
-    <label for="password">Пароль:</label>
-    <input type="password" name="password" id="password" required>
-    <input type="submit" value="Войти">
-    <?php if (isset($error)): ?>
-        <p><?php echo htmlspecialchars($error); ?></p>
-    <?php endif; ?>
-</form>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Login - GameStore</title>
+    <link rel="stylesheet" href="https://gamestore.local/css/style.css">
+</head>
+<body>
+    <div class="login-container">
+        <h2 class="login-title">Вход для администратора</h2>
+        <form method="POST" action="admin_login.php" class="login-form">
+            <label for="username">Имя пользователя:</label>
+            <input type="text" name="username" id="username" required>
+            <label for="password">Пароль:</label>
+            <input type="password" name="password" id="password" required>
+            <input type="submit" value="Войти" class="login-button">
+            <?php if (isset($error)): ?>
+                <p class="error-message"><?php echo htmlspecialchars($error); ?></p>
+            <?php endif; ?>
+        </form>
+    </div>
+</body>
+</html>

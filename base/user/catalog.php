@@ -12,14 +12,12 @@ while ($row = $genres_result->fetch_assoc()) {
 }
 
 // Определение параметров фильтрации, сортировки и поиска из URL
-$search = isset($_GET['search']) ? $_GET['search'] : '';
-$genre = isset($_GET['genre']) ? $_GET['genre'] : '';
-$sort = isset($_GET['sort']) ? $_GET['sort'] : 'title';
+$search = $_GET['search'] ?? '';
+$genre = $_GET['genre'] ?? '';
+$sort = $_GET['sort'] ?? 'title';
 
 // Создание основного SQL-запроса с фильтрацией, сортировкой и использованием cover_image из таблицы games
-$sql = "SELECT games.*, games.cover_image 
-        FROM games 
-        WHERE 1=1";
+$sql = "SELECT games.*, games.cover_image FROM games WHERE 1=1";
 
 // Фильтрация по жанру
 if ($genre) {
@@ -32,14 +30,19 @@ if ($search) {
 }
 
 // Сортировка
-if ($sort == 'price_asc') {
-    $sql .= " ORDER BY games.price ASC";
-} elseif ($sort == 'price_desc') {
-    $sql .= " ORDER BY games.price DESC";
-} elseif ($sort == 'release_date') {
-    $sql .= " ORDER BY games.release_date DESC";
-} else {
-    $sql .= " ORDER BY games.title ASC";
+switch ($sort) {
+    case 'price_asc':
+        $sql .= " ORDER BY games.price ASC";
+        break;
+    case 'price_desc':
+        $sql .= " ORDER BY games.price DESC";
+        break;
+    case 'release_date':
+        $sql .= " ORDER BY games.release_date DESC";
+        break;
+    default:
+        $sql .= " ORDER BY games.title ASC";
+        break;
 }
 
 // Подготовка запроса с учетом фильтров
