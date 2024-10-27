@@ -16,5 +16,7 @@ $base_url = "https://" . $_SERVER['HTTP_HOST'] . "/admin";
         <li><a href="<?php echo $base_url; ?>/manage_reviews.php">Управление отзывами</a></li>
         <li><a href="<?php echo $base_url; ?>/statistics.php">Статистика</a></li>
         <li><a href="<?php echo $base_url; ?>/sales_report.php">Отчет о продажах</a></li>
+        <li><a href="admin_logout.php">Выйти</a></li>
     </ul>
 </nav>
+

@@ -1,4 +1,11 @@
 <?php
+session_start();
+if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    header("Location: admin_login.php"); // Перенаправление на страницу входа для администратора
+    exit;
+}
+?>
+<?php
 include_once "../includes/db.php";
 
 // Проверка ID пользователя

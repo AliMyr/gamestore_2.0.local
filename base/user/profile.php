@@ -4,39 +4,55 @@ include_once "../includes/header.php";
 include_once "../includes/navbar.php";
 session_start();
 
-// Проверка, авторизован ли пользователь
+// Проверка, что пользователь авторизован
 if (!isset($_SESSION['user_id'])) {
-    echo "<p>Пожалуйста, войдите в систему для доступа к профилю.</p>";
     header("Location: login.php");
     exit;
 }
 
-// Получение данных пользователя
 $user_id = $_SESSION['user_id'];
-$sql = "SELECT * FROM users WHERE user_id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
-$user = $result->fetch_assoc();
 
-// Проверка, существует ли пользователь
-if (!$user) {
-    // Если пользователя не существует, удаляем сессию и перенаправляем на страницу входа
-    session_unset();
-    session_destroy();
-    header("Location: login.php");
-    exit;
-}
+// Получение данных о пользователе
+$user_sql = "SELECT * FROM users WHERE user_id = ?";
+$user_stmt = $conn->prepare($user_sql);
+$user_stmt->bind_param("i", $user_id);
+$user_stmt->execute();
+$user = $user_stmt->get_result()->fetch_assoc();
+
+// Получение списка купленных игр
+$purchased_games_sql = "
+    SELECT games.title, games.cover_image, games.price, sales.sale_date 
+    FROM sales
+    JOIN games ON sales.game_id = games.game_id
+    WHERE sales.user_id = ?
+    ORDER BY sales.sale_date DESC";
+$purchased_games_stmt = $conn->prepare($purchased_games_sql);
+$purchased_games_stmt->bind_param("i", $user_id);
+$purchased_games_stmt->execute();
+$purchased_games = $purchased_games_stmt->get_result();
+
 ?>
 
 <h2>Профиль пользователя</h2>
-
 <p><strong>Имя пользователя:</strong> <?php echo htmlspecialchars($user['username']); ?></p>
 <p><strong>Email:</strong> <?php echo htmlspecialchars($user['email']); ?></p>
 <p><strong>Дата регистрации:</strong> <?php echo htmlspecialchars($user['registration_date']); ?></p>
 
-<a href="logout.php">Выйти</a>
+<h3>Купленные игры</h3>
+<?php if ($purchased_games->num_rows > 0): ?>
+    <div class="purchased-games">
+        <?php while ($game = $purchased_games->fetch_assoc()): ?>
+            <div class="game-item">
+                <img src="<?php echo htmlspecialchars($game['cover_image'] ?? 'https://via.placeholder.com/100'); ?>" alt="<?php echo htmlspecialchars($game['title']); ?>" class="game-cover">
+                <p><strong><?php echo htmlspecialchars($game['title']); ?></strong></p>
+                <p>Цена: <?php echo number_format($game['price'], 2); ?> ₸</p>
+                <p>Дата покупки: <?php echo htmlspecialchars($game['sale_date']); ?></p>
+            </div>
+        <?php endwhile; ?>
+    </div>
+<?php else: ?>
+    <p>Вы еще не приобрели ни одной игры.</p>
+<?php endif; ?>
 
 <?php
 include_once "../includes/footer.php";

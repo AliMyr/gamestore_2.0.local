@@ -34,7 +34,7 @@ if ($user_id) {
 }
 
 // Обработка отправки формы для добавления или редактирования отзыва
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && $user_id) {
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['rating'])) {
     $rating = $_POST['rating'];
     $review_text = $_POST['review_text'];
 
@@ -98,76 +98,37 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $user_id) {
         <h3>Трейлер</h3>
         <iframe width="560" height="315" src="<?php echo htmlspecialchars($game['trailer_url']); ?>" frameborder="0" allowfullscreen></iframe>
     <?php endif; ?>
-</div>
 
-<h3 class="avg-rating">Средний рейтинг</h3>
-<?php
-$rating_sql = "SELECT AVG(rating) AS avg_rating FROM reviews WHERE game_id = ?";
-$rating_stmt = $conn->prepare($rating_sql);
-$rating_stmt->bind_param("i", $game_id);
-$rating_stmt->execute();
-$avg_rating = $rating_stmt->get_result()->fetch_assoc()['avg_rating'];
-
-echo "<p><strong>Средний рейтинг:</strong> " . ($avg_rating ? round($avg_rating, 1) . " / 5" : "Нет рейтинга") . "</p>";
-?>
-
-<div class="review-section">
-    <h3>Ваш отзыв</h3>
-    <?php if ($user_review): ?>
-        <!-- Форма редактирования отзыва -->
-        <form method="POST">
-            <label>Рейтинг:</label>
-            <select name="rating" required>
-                <?php for ($i = 1; $i <= 5; $i++): ?>
-                    <option value="<?php echo $i; ?>" <?php if ($user_review['rating'] == $i) echo 'selected'; ?>><?php echo $i; ?></option>
-                <?php endfor; ?>
-            </select>
-            <label>Отзыв:</label>
-            <textarea name="review_text" required><?php echo htmlspecialchars($user_review['review_text']); ?></textarea>
-            <input type="submit" value="Обновить отзыв">
-            <?php if (isset($user_review['review_id'])): ?>
-                <a href="delete_review.php?review_id=<?php echo $user_review['review_id']; ?>&game_id=<?php echo $game_id; ?>" class="delete-review" onclick="return confirm('Вы уверены, что хотите удалить этот отзыв?');">Удалить отзыв</a>
-            <?php endif; ?>
+    <?php if ($user_id): ?>
+        <form id="purchase-form">
+            <input type="hidden" name="game_id" value="<?php echo $game_id; ?>">
+            <input type="hidden" name="amount" value="<?php echo htmlspecialchars($game['price']); ?>">
+            <input type="submit" value="Купить" class="button">
         </form>
+        <div id="purchase-message"></div>
     <?php else: ?>
-        <!-- Форма добавления нового отзыва -->
-        <form method="POST">
-            <label>Рейтинг:</label>
-            <select name="rating" required>
-                <?php for ($i = 1; $i <= 5; $i++): ?>
-                    <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
-                <?php endfor; ?>
-            </select>
-            <label>Отзыв:</label>
-            <textarea name="review_text" required></textarea>
-            <input type="submit" value="Оставить отзыв">
-        </form>
+        <p><a href="login.php">Войдите</a> для покупки этой игры.</p>
     <?php endif; ?>
 </div>
 
-<div class="other-reviews">
-    <h3>Отзывы других пользователей</h3>
-    <?php
-    // Отображение всех отзывов, кроме отзыва текущего пользователя
-    $reviews_sql = "SELECT users.username, reviews.rating, reviews.review_text, reviews.review_date 
-                    FROM reviews 
-                    JOIN users ON reviews.user_id = users.user_id 
-                    WHERE reviews.game_id = ? AND reviews.user_id != ? 
-                    ORDER BY reviews.review_date DESC";
-    $reviews_stmt = $conn->prepare($reviews_sql);
-    $reviews_stmt->bind_param("ii", $game_id, $user_id);
-    $reviews_stmt->execute();
-    $reviews_result = $reviews_stmt->get_result();
+<script>
+document.getElementById('purchase-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const formData = new FormData(this);
 
-    while ($review = $reviews_result->fetch_assoc()) {
-        echo "<div class='review'>";
-        echo "<p><strong>" . htmlspecialchars($review['username']) . "</strong> (" . $review['rating'] . "/5)</p>";
-        echo "<p>" . htmlspecialchars($review['review_text']) . "</p>";
-        echo "<p><small>" . $review['review_date'] . "</small></p>";
-        echo "</div>";
-    }
-    ?>
-</div>
+    fetch('purchase.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.text())
+    .then(result => {
+        document.getElementById('purchase-message').innerHTML = result;
+    })
+    .catch(error => {
+        document.getElementById('purchase-message').innerHTML = "Ошибка при выполнении покупки.";
+    });
+});
+</script>
 
 <?php
 include_once "../includes/footer.php";
