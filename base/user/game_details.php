@@ -103,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['rating'])) {
     <h3>Отзывы</h3>
     <?php
     $reviews_sql = "
-        SELECT r.rating, r.review_text, u.username 
+        SELECT r.rating, r.review_text, r.review_date, u.username 
         FROM reviews r 
         JOIN users u ON r.user_id = u.user_id 
         WHERE r.game_id = ?";
@@ -116,9 +116,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['rating'])) {
         echo "<div class='review'>";
         echo "<p><strong>Пользователь:</strong> " . htmlspecialchars($review['username']) . "</p>";
         echo "<p><strong>Рейтинг:</strong> " . htmlspecialchars($review['rating']) . "</p>";
+        echo "<p><strong>Дата отзыва:</strong> " . htmlspecialchars(date("d.m.Y H:i", strtotime($review['review_date']))) . "</p>";
         echo "<p>" . nl2br(htmlspecialchars($review['review_text'])) . "</p>";
         echo "</div>";
-        echo "<div class='review-divider'></div>"; // Стилизация разделителя
+        echo "<hr>"; // Добавляем горизонтальный разделитель после каждого отзыва
     }
     ?>
 
