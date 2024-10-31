@@ -541,3 +541,8 @@ footer {
     background-color: #555;
     transform: scale(1.05);
 }
+
+.review-divider {
+    border-top: 1px solid #ccc; /* Цвет и стиль линии */
+    margin: 10px 0; /* Отступы сверху и снизу */
+}

@@ -57,6 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['rating'])) {
     // Обновление данных о текущем отзыве пользователя
     $user_review = ['rating' => $rating, 'review_text' => $review_text];
 }
+
 ?>
 
 <div class="game-details">
@@ -99,6 +100,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['rating'])) {
         <iframe width="560" height="315" src="<?php echo htmlspecialchars($game['trailer_url']); ?>" frameborder="0" allowfullscreen></iframe>
     <?php endif; ?>
 
+    <h3>Отзывы</h3>
+    <?php
+    $reviews_sql = "
+        SELECT r.rating, r.review_text, u.username 
+        FROM reviews r 
+        JOIN users u ON r.user_id = u.user_id 
+        WHERE r.game_id = ?";
+    $reviews_stmt = $conn->prepare($reviews_sql);
+    $reviews_stmt->bind_param("i", $game_id);
+    $reviews_stmt->execute();
+    $reviews_result = $reviews_stmt->get_result();
+
+    while ($review = $reviews_result->fetch_assoc()) {
+        echo "<div class='review'>";
+        echo "<p><strong>Пользователь:</strong> " . htmlspecialchars($review['username']) . "</p>";
+        echo "<p><strong>Рейтинг:</strong> " . htmlspecialchars($review['rating']) . "</p>";
+        echo "<p>" . nl2br(htmlspecialchars($review['review_text'])) . "</p>";
+        echo "</div>";
+        echo "<div class='review-divider'></div>"; // Стилизация разделителя
+    }
+    ?>
+
     <?php if ($user_id): ?>
         <form id="purchase-form">
             <input type="hidden" name="game_id" value="<?php echo $game_id; ?>">
@@ -110,6 +133,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['rating'])) {
         <p><a href="login.php">Войдите</a> для покупки этой игры.</p>
     <?php endif; ?>
 </div>
+
+
 
 <script>
 document.getElementById('purchase-form').addEventListener('submit', function(event) {
